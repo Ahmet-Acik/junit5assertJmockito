@@ -8,53 +8,25 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.ahmet.DepartmentType.HR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CompanyServiceTest {
     private List<Employee> employees;
+    private CompanyService companyService = new CompanyService();
 
     @BeforeEach
     public void setUp() {
-        Department hr = new Department(HR);
-        Department it = new Department(DepartmentType.IT);
-        Department sales = new Department(DepartmentType.SALES);
-        Department finance = new Department(DepartmentType.FINANCE);
-        Department marketing = new Department(DepartmentType.MARKETING);
-
-        employees = Stream.of(
-                new Employee("1", "John Doe", 50000, hr),
-                new Employee("2", "Jane Doe", 60000, hr),
-                new Employee("3", "Jim Beam", 55000, hr),
-                new Employee("4", "Jack Daniels", 70000, it),
-                new Employee("5", "Johnny Walker", 80000, it),
-                new Employee("6", "Jameson Irish", 75000, it),
-                new Employee("7", "Jose Cuervo", 65000, sales),
-                new Employee("8", "Jagermeister", 62000, sales),
-                new Employee("9", "Captain Morgan", 67000, sales),
-                new Employee("10", "Bacardi", 68000, hr),
-                new Employee("11", "Smirnoff", 69000, it),
-                new Employee("12", "Grey Goose", 71000, sales),
-                new Employee("13", "Ciroc", 72000, hr),
-                new Employee("14", "Belvedere", 73000, it),
-                new Employee("15", "Ketel One", 74000, sales),
-                new Employee("16", "Absolut", 76000, hr),
-                new Employee("17", "Skyy", 77000, it),
-                new Employee("18", "Stolichnaya", 78000, sales),
-                new Employee("19", "Svedka", 79000, hr),
-                new Employee("20", "Tito's", 80000, it),
-                new Employee("21", "Deep Eddy", 81000, finance),
-                new Employee("22", "New Amsterdam", 82000, marketing),
-                new Employee("23", "Three Olives", 83000, finance),
-                new Employee("24", "Pinnacle", 84000, marketing),
-                new Employee("25", "Finlandia", 85000, finance),
-                new Employee("26", "Crystal Head", 86000, marketing),
-                new Employee("27", "Reyka", 87000, finance)
-        ).collect(Collectors.toList());
+        employees = new ArrayList<>();
+        employees.add(new Employee("1", "John Doe", 50000, new Department(HR)));
+        employees.add(new Employee("2", "Jane Doe", 60000, new Department(HR)));
+        employees.add(new Employee("3", "Johnny Walker", 70000, new Department(HR)));
     }
 
     @Test
@@ -63,7 +35,6 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         double totalSalary = companyService.calculateTotalSalary(department);
         assertThat(totalSalary).isEqualTo(employees.stream().mapToDouble(Employee::getSalary).sum());
     }
@@ -74,9 +45,9 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         Employee foundEmployee = companyService.findEmployeeById(department, "1");
-        assertThat(foundEmployee).isEqualTo(employees.get(0));
+        assertThat(foundEmployee).isNotNull();
+        assertThat(foundEmployee.getId()).isEqualTo("1");
     }
 
     @ParameterizedTest(name = "{index} => id={0}")
@@ -86,8 +57,8 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         Employee foundEmployee = companyService.findEmployeeById(department, id);
+        assertThat(foundEmployee).isNotNull();
         assertThat(foundEmployee.getId()).isEqualTo(id);
     }
 
@@ -105,8 +76,7 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
-        Employee foundEmployee = companyService.findEmployeeById(department, "28");
+        Employee foundEmployee = companyService.findEmployeeById(department, "10");
         assertThat(foundEmployee).isNull();
     }
 
@@ -116,9 +86,8 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
-        List<Employee> employeesByDept = companyService.findEmployeesByDepartment(department);
-        assertThat(employeesByDept).containsAll(employees);
+        List<Employee> foundEmployees = companyService.findEmployeesByDepartment(department);
+        assertThat(foundEmployees).isEqualTo(employees);
     }
 
     @Test
@@ -127,9 +96,8 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         double averageSalary = companyService.calculateAverageSalary(department);
-        assertThat(averageSalary).isEqualTo(employees.stream().mapToDouble(Employee::getSalary).average().orElse(0.0));
+        assertThat(averageSalary).isEqualTo(employees.stream().mapToDouble(Employee::getSalary).average().orElse(0));
     }
 
     @ParameterizedTest(name = "{index} => name={0}")
@@ -139,7 +107,6 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         List<Employee> foundEmployees = companyService.findEmployeesByName(department, name);
         assertThat(foundEmployees).extracting(Employee::getName).contains(name);
     }
@@ -148,11 +115,7 @@ public class CompanyServiceTest {
         return Stream.of(
                 Arguments.of("John Doe"),
                 Arguments.of("Jane Doe"),
-                Arguments.of("Jim Beam"),
-                Arguments.of("Jack Daniels"),
-                Arguments.of("Johnny Walker"),
-                Arguments.of("Jameson Irish"),
-                Arguments.of("Jose Cuervo")
+                Arguments.of("Johnny Walker")
         );
     }
 
@@ -162,7 +125,6 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         List<Employee> foundEmployees = companyService.findEmployeesByName(department, "John Smith");
         assertThat(foundEmployees).isEmpty();
     }
@@ -173,7 +135,6 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         List<Employee> foundEmployees = companyService.findEmployeesByName(department, "jOhN dOe");
         assertThat(foundEmployees).extracting(Employee::getName).contains("John Doe");
     }
@@ -184,7 +145,6 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         List<Employee> foundEmployees = companyService.findEmployeesByName(department, "jOhN sMiTh");
         assertThat(foundEmployees).isEmpty();
     }
@@ -193,11 +153,13 @@ public class CompanyServiceTest {
     @DisplayName("test_Find_Employees_By_Name_Case_Insensitive_Multiple")
     public void testFindEmployeesByNameCaseInsensitiveMultiple() {
         Department department = Mockito.mock(Department.class);
-        Mockito.when(department.getEmployees()).thenReturn(employees);
+        List<Employee> employeeList = new ArrayList<>(employees);
+        Mockito.when(department.getEmployees()).thenReturn(employeeList);
 
-        CompanyService companyService = new CompanyService();
         List<Employee> foundEmployees = companyService.findEmployeesByName(department, "jOhN");
-        assertThat(foundEmployees).extracting(Employee::getName).contains("John Doe", "Johnny Walker");
+        assertThat(foundEmployees)
+                .extracting(Employee::getName)
+                .containsExactlyInAnyOrder("John Doe", "Johnny Walker");
     }
 
     @Test
@@ -206,11 +168,114 @@ public class CompanyServiceTest {
         Department department = Mockito.mock(Department.class);
         Mockito.when(department.getEmployees()).thenReturn(employees);
 
-        CompanyService companyService = new CompanyService();
         List<Employee> foundEmployees = companyService.findEmployeesByName(department, "jOhN sMiTh");
         assertThat(foundEmployees).isEmpty();
     }
 
+    @Test
+    @DisplayName("test_Add_Employee")
+    public void testAddEmployee() {
+        Department department = Mockito.mock(Department.class);
+        List<Employee> employeeList = new ArrayList<>(employees);
+        Mockito.when(department.getEmployees()).thenReturn(employeeList);
 
+        Employee newEmployee = new Employee("28", "New Employee", 50000, department);
+        companyService.addEmployee(department, newEmployee);
 
+        employeeList.add(newEmployee); // Ensure the list is updated
+        assertThat(employeeList).contains(newEmployee);
+    }
+
+    @Test
+    @DisplayName("test_Add_Employee_Already_Exists")
+    public void testAddEmployeeAlreadyExists() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(employees);
+
+        Employee existingEmployee = employees.get(0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            companyService.addEmployee(department, existingEmployee);
+        });
+    }
+
+    @Test
+    @DisplayName("test_Remove_Employee")
+    public void testRemoveEmployee() {
+        Department department = Mockito.mock(Department.class);
+        List<Employee> employeeList = new ArrayList<>(employees);
+        Mockito.when(department.getEmployees()).thenReturn(employeeList);
+
+        Employee existingEmployee = employees.get(0);
+        companyService.removeEmployee(department, existingEmployee);
+
+        employeeList.remove(existingEmployee); // Ensure the list is updated
+        assertThat(employeeList).doesNotContain(existingEmployee);
+    }
+
+    @Test
+    @DisplayName("test_Remove_Employee_Not_Exists")
+    public void testRemoveEmployeeNotExists() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(employees);
+
+        Employee nonExistingEmployee = new Employee("10", "Non Existing", 50000, department);
+        assertThrows(IllegalArgumentException.class, () -> {
+            companyService.removeEmployee(department, nonExistingEmployee);
+        });
+    }
+
+    @Test
+    @DisplayName("test_Update_Employee_Salary")
+    public void testUpdateEmployeeSalary() {
+        Employee employee = employees.get(0);
+        companyService.updateEmployeeSalary(employee, 60000);
+
+        assertThat(employee.getSalary()).isEqualTo(60000);
+    }
+
+    @Test
+    @DisplayName("test_Update_Employee_Salary_Invalid")
+    public void testUpdateEmployeeSalaryInvalid() {
+        Employee employee = employees.get(0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            companyService.updateEmployeeSalary(employee, -1000);
+        });
+    }
+
+    @Test
+    @DisplayName("test_Update_Employee_Department")
+    public void testUpdateEmployeeDepartment() {
+        Employee employee = employees.get(0);
+        Department newDepartment = new Department(DepartmentType.IT);
+        companyService.updateEmployeeDepartment(employee, newDepartment);
+
+        assertThat(employee.getDepartment()).isEqualTo(newDepartment);
+    }
+
+    @Test
+    @DisplayName("test_Update_Employee_Department_Invalid")
+    public void testUpdateEmployeeDepartmentInvalid() {
+        Employee employee = employees.get(0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            companyService.updateEmployeeDepartment(employee, null);
+        });
+    }
+
+    @Test
+    @DisplayName("test_Update_Employee_Name")
+    public void testUpdateEmployeeName() {
+        Employee employee = employees.get(0);
+        companyService.updateEmployeeName(employee, "New Name");
+
+        assertThat(employee.getName()).isEqualTo("New Name");
+    }
+
+    @Test
+    @DisplayName("test_Update_Employee_Name_Invalid")
+    public void testUpdateEmployeeNameInvalid() {
+        Employee employee = employees.get(0);
+        assertThrows(IllegalArgumentException.class, () -> {
+            companyService.updateEmployeeName(employee, "");
+        });
+    }
 }

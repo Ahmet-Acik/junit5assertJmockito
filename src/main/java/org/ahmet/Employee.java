@@ -2,7 +2,7 @@ package org.ahmet;
 
 public class Employee {
     private final String id;
-    private final String name;
+    private String name;
     private Department department;
     private double salary;
 
@@ -35,5 +35,9 @@ public class Employee {
 
     public void setSalary(double salary) {
         this.salary = salary;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
