@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Department {
-    private String name;
-    private List<Employee> employees;
+    private final DepartmentType type;
+    private final List<Employee> employees;
 
-    public Department(String name) {
-        this.name = name;
+ public Department(DepartmentType type) {
+        this.type = type;
         this.employees = new ArrayList<>();
     }
 
-    public String getName() {
-        return name;
+  public DepartmentType getType() {
+        return type;
     }
 
     public List<Employee> getEmployees() {
