@@ -278,4 +278,70 @@ public class CompanyServiceTest {
             companyService.updateEmployeeName(employee, "");
         });
     }
+    // more tests
+    @Test
+    @DisplayName("test_Calculate_Total_Salary_Empty")
+    public void testCalculateTotalSalaryEmpty() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(new ArrayList<>());
+
+        double totalSalary = companyService.calculateTotalSalary(department);
+        assertThat(totalSalary).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("test_Calculate_Average_Salary_Empty")
+    public void testCalculateAverageSalaryEmpty() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(new ArrayList<>());
+
+        double averageSalary = companyService.calculateAverageSalary(department);
+        assertThat(averageSalary).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("test_Find_Employee_ById_Empty")
+    public void testFindEmployeeByIdEmpty() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(new ArrayList<>());
+
+        Employee foundEmployee = companyService.findEmployeeById(department, "1");
+        assertThat(foundEmployee).isNull();
+    }
+
+    @Test
+    @DisplayName("test_Find_Employees_By_Name_Empty")
+    public void testFindEmployeesByNameEmpty() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(new ArrayList<>());
+
+        List<Employee> foundEmployees = companyService.findEmployeesByName(department, "John Doe");
+        assertThat(foundEmployees).isEmpty();
+    }
+
+    @Test
+    @DisplayName("test_Find_Employees_ByDepartment_Empty")
+    public void findEmployeesByDepartmentEmpty() {
+        Department department = Mockito.mock(Department.class);
+        Mockito.when(department.getEmployees()).thenReturn(new ArrayList<>());
+
+        List<Employee> foundEmployees = companyService.findEmployeesByDepartment(department);
+        assertThat(foundEmployees).isEmpty();
+    }
+
+    @Test
+    @DisplayName("test_Add_Employee_Empty")
+    public void testAddEmployeeEmpty() {
+        Department department = Mockito.mock(Department.class);
+        List<Employee> employeeList = new ArrayList<>();
+        Mockito.when(department.getEmployees()).thenReturn(employeeList);
+
+        Employee newEmployee = new Employee("28", "New Employee", 50000, department);
+        companyService.addEmployee(department, newEmployee);
+
+        employeeList.add(newEmployee); // Ensure the list is updated
+        assertThat(employeeList).contains(newEmployee);
+    }
+
+
 }
